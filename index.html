@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An interactive learning activity that teaches one applied AI skill: AI output is only as good as the context you give it.">
 <title>Context Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +40,8 @@
   --good: #6fd08f; --good-soft: #1b3324; --chip-off: #222c29; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 22px; }
 h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
@@ -152,7 +160,8 @@ header { display: grid; gap: 10px; }
 .bar-row span:last-child { text-align: right; font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .insight { background: var(--accent-soft); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
 </style>
-
+</head>
+<body>
 <div class="wrap">
   <header>
     <span class="eyebrow" id="eyebrow">AI for Customer Support · Weeks 2 to 3 · Core skills</span>
@@ -573,3 +582,5 @@ document.getElementById("btn-copy").addEventListener("click", () => {
 
 setScenario("support");
 </script>
+</body>
+</html>
