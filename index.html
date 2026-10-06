@@ -96,7 +96,7 @@ header { display: grid; gap: 10px; }
 /* Step 3 */
 .verify { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
 @media (max-width: 820px) { .verify { grid-template-columns: minmax(0, 1fr); } }
-.draft { display: grid; gap: 6px; }
+.draft { display: grid; gap: 6px; align-content: start; }
 .sent { text-align: left; font: inherit; font-size: 14.5px; color: var(--ink); background: transparent; border: 1px dashed transparent; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
 .sent:hover { border-color: var(--line); background: var(--chip-off); }
 .sent.flag-right { background: var(--good-soft); border-color: var(--good); }
@@ -115,30 +115,97 @@ header { display: grid; gap: 10px; }
 .takeaway .btn { justify-self: start; background: transparent; color: var(--bg); border-color: var(--bg); }
 .foot { color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); }
 @media (prefers-reduced-motion: reduce) { .reply p.changed { animation: none; } }
+
+/* Progress tracker */
+.progress { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .progress { grid-template-columns: minmax(0, 1fr); } }
+.progress li { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.progress li b { display: block; font-size: 14px; }
+.pg-sub { display: block; font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); }
+.pg-dot { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--chip-off); color: var(--muted); border: 1px solid var(--line); }
+.progress li.active { border-color: var(--accent); }
+.progress li.active .pg-dot { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.progress li.done .pg-dot { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.ready { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: var(--good-soft); border: 1px solid var(--good); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+.complete { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+</style>
+
+<style>
+/* Scenario switcher and facilitator view */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--chip-off); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.seg button { font: inherit; font-size: 13.5px; border: 0; background: transparent; color: var(--muted); padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.fac-toggle[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.fac { border-color: var(--accent); }
+.fac-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 820px) { .fac-grid { grid-template-columns: minmax(0, 1fr); } }
+.kv { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.kv td { padding: 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.kv td:last-child { text-align: right; font-family: var(--font-mono); font-size: 13px; padding-left: 12px; }
+.sample { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 2px 8px; }
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 72px minmax(0, 1fr) 42px; gap: 10px; align-items: center; font-size: 13.5px; }
+.bar-track { height: 12px; background: var(--chip-off); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--line); border-radius: 999px; }
+.bar-row.key .bar-fill { background: var(--accent); }
+.bar-row span:last-child { text-align: right; font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.insight { background: var(--accent-soft); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
 </style>
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">AI for Customer Support · Week 2 · Prompting with context</span>
+    <span class="eyebrow" id="eyebrow">AI for Customer Support · Weeks 2 to 3 · Core skills</span>
     <h1>Context in, quality out</h1>
-    <p class="lede">The same AI tool can write a reply that loses a customer or one that keeps them. The difference is the context you give it. Switch on each ingredient below and watch the draft change.</p>
+    <p class="lede">The same AI tool can write a reply that makes things worse or one that solves the problem. The difference is the context you give it. Switch on each ingredient below and watch the draft change.</p>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Choose a scenario" id="seg"></div>
+      <button class="btn fac-toggle" id="btn-fac" type="button" aria-pressed="false">Facilitator view</button>
+    </div>
+    <ol class="progress" aria-label="Activity progress">
+      <li id="pg-1" class="done"><span class="pg-dot" aria-hidden="true">1</span><span><b>Real scenario</b><span class="pg-sub" id="pg-1-sub">Read the ticket</span></span></li>
+      <li id="pg-2"><span class="pg-dot" aria-hidden="true">2</span><span><b>Prompting with context</b><span class="pg-sub" id="pg-2-sub">0 of 4 ingredients</span></span></li>
+      <li id="pg-3"><span class="pg-dot" aria-hidden="true">3</span><span><b>Human in the loop</b><span class="pg-sub" id="pg-3-sub">Check before you send</span></span></li>
+    </ol>
   </header>
+
+  <section class="panel fac" id="fac" aria-labelledby="t-fac" hidden>
+    <div class="step-label" style="justify-content:space-between;flex-wrap:wrap">
+      <h2 id="t-fac">Facilitator view</h2>
+      <span class="foot">What a trainer or L&amp;D lead would see</span>
+    </div>
+    <div class="fac-grid">
+      <div style="display:grid;gap:10px;align-content:start;min-width:0">
+        <p class="eyebrow">This learner, live</p>
+        <table class="kv" id="fac-live"></table>
+      </div>
+      <div style="display:grid;gap:10px;align-content:start;min-width:0">
+        <p class="eyebrow" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Example cohort of 24 learners <span class="sample">Sample data</span></p>
+        <p class="foot">Which ingredient learners switched on first</p>
+        <div class="bars" id="fac-bars"></div>
+        <table class="kv">
+          <tr><td>Completed the activity</td><td>22 of 24</td></tr>
+          <tr><td>Caught the off-policy promise on the first try</td><td>58%</td></tr>
+          <tr><td>Median time to complete</td><td>8 min</td></tr>
+        </table>
+        <p class="insight"><b>What I would change:</b> most learners reach for Tone first, but Context changes the reply most. So the Week 2 session would open with a short Context drill.</p>
+      </div>
+    </div>
+  </section>
 
   <div class="grid">
     <div class="col">
       <section class="panel" aria-labelledby="t-ticket">
-        <div class="step-label"><span class="step-no">Step 1</span><h2 id="t-ticket">Read the ticket</h2></div>
-        <div class="ticket-head">
-          <span>#48213</span><span class="pill high">Priority: high</span><span class="pill neutral">Repeat contact</span><span class="pill neutral">SLA 2h 40m left</span>
-        </div>
+        <div class="step-label"><span class="step-no">Step 1</span><h2 id="t-ticket">Real scenario: read the ticket</h2></div>
+        <div class="ticket-head" id="case-head"></div>
         <div class="ticket-body">
-          <p class="ticket-from">Sam Patel <span class="foot">· customer since 2022</span></p>
-          <p class="ticket-msg">"This is the SECOND time my order has arrived damaged. I have been a customer for 4 years. I want a full refund, not another replacement."</p>
+          <p class="ticket-from" id="case-from"></p>
+          <p class="ticket-msg" id="case-msg"></p>
         </div>
       </section>
 
       <section class="panel" aria-labelledby="t-build">
-        <div class="step-label"><span class="step-no">Step 2</span><h2 id="t-build">Build your prompt</h2></div>
+        <div class="step-label"><span class="step-no">Step 2</span><h2 id="t-build">Prompting with context</h2></div>
         <p class="lede">Start with the bare request. Add one ingredient at a time and notice which one changes the reply the most.</p>
         <div class="ingredients" id="ingredients"></div>
         <div class="row-actions">
@@ -165,163 +232,344 @@ header { display: grid; gap: 10px; }
           <span class="score" id="score">0/4</span>
         </div>
         <ul class="checks" id="checks"></ul>
+        <div class="ready" id="ready" hidden>
+          <p><b>4/4: a reply you would send.</b> One more step before it goes.</p>
+          <button class="btn primary" id="btn-next" type="button">Go to Step 3</button>
+        </div>
       </section>
     </div>
   </div>
 
   <section class="panel" aria-labelledby="t-verify">
-    <div class="step-label"><span class="step-no">Step 3</span><h2 id="t-verify">Check before you send</h2></div>
-    <p class="lede">Good context gets you a good draft, not a finished one. This draft used all four ingredients, but the AI added one promise our policy does not allow. Click the sentence you would remove.</p>
+    <div class="step-label"><span class="step-no">Step 3</span><h2 id="t-verify">Human in the loop: check before you send</h2></div>
+    <p class="lede">Good context gets you a good draft, not a finished one. This draft used all four ingredients, but the AI added one line our policy does not allow. Click the sentence you would remove.</p>
     <div class="verify">
       <div class="draft" id="draft"></div>
       <div style="display:grid; gap:12px; align-content:start">
-        <dl class="policy">
-          <dt>Policy: repeat damage</dt><dd>Full refund to the original payment method. Arrives in 3 to 5 working days.</dd>
-          <dt>Policy: goodwill credit</dt><dd>Vouchers and credits need team leader approval before they are offered.</dd>
-        </dl>
+        <dl class="policy" id="policy"></dl>
         <div id="feedback" hidden></div>
+        <button class="btn" id="btn-retry" type="button" style="justify-self:start" hidden>Try Step 3 again</button>
       </div>
     </div>
   </section>
 
   <section class="takeaway" aria-label="Takeaway">
-    <span class="eyebrow">Take this to your next ticket</span>
+    <span class="eyebrow">Take this to your next task</span>
     <p class="big">Vague in, generic out. Role, Context, Tone and Goal in, a reply you would actually send. Then check it against policy before it goes.</p>
     <button class="btn" id="btn-copy" type="button">Copy the R-C-T-G template</button>
     <p class="foot" id="copy-status" aria-live="polite"></p>
   </section>
 
-  <p class="foot">Learning activity, about 10 minutes. Practice data only: never paste real customer details into an unapproved AI tool.</p>
+  <p class="foot">Learning activity, about 10 minutes. Practice data only: never paste real customer or employee details into an unapproved AI tool.</p>
+  <p class="foot">Designed and built by Muhammad Asadullah with Claude Code.</p>
 </div>
 
 <script>
-const ING = [
-  { id: "r", key: "R", name: "Role", text: "You are a senior support agent at Northfield Home.",
-    line: "Role: You are a senior support agent at Northfield Home." },
-  { id: "c", key: "C", name: "Context", text: "Second damaged delivery. Customer for 4 years. Policy: full refund after repeat damage.",
-    line: "Context: Second damaged delivery for a 4-year customer. Our policy allows a full refund after repeat damage, 3 to 5 working days." },
-  { id: "t", key: "T", name: "Tone", text: "Calm and warm. Plain English. No corporate jargon.",
-    line: "Tone: Calm, warm and human. Plain English. No corporate jargon." },
-  { id: "g", key: "G", name: "Goal", text: "Confirm the refund, apologise once, keep the customer. Under 120 words.",
-    line: "Goal: Confirm the outcome clearly, apologise once and keep the customer. Under 120 words." }
-];
-const state = { r: false, c: false, t: false, g: false };
-let lastReply = [];
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-function buildReply(s) {
-  const p = [];
-  p.push(s.t ? "Hi Sam," : "Dear Customer,");
-  // Acknowledge
-  if (s.c && s.t) p.push("I am really sorry. Your order arriving damaged a second time is not good enough, especially after four years with us.");
-  else if (s.c) p.push("We apologise that your order has arrived damaged for a second time. We value your custom of four years.");
-  else if (s.t) p.push("I am really sorry your order arrived damaged. That is frustrating, and I want to put it right.");
-  else p.push("Thank you for contacting us regarding order #48213. We apologise for any inconvenience caused by the damage to your item.");
-  // Resolution
-  const owner = s.r ? "I have" : "We have";
-  if (s.c) {
-    p.push(s.g
-      ? owner + " processed a full refund to your original payment card. You will see it within 3 to 5 working days."
-      : owner + " arranged a full refund for your order, which will be returned to you in due course once it has been processed by the relevant team.");
-  } else {
-    p.push(s.g
-      ? owner + " arranged a free replacement, which will be with you within 5 to 7 working days."
-      : "We would be happy to send you a replacement item at no extra cost. Please allow 5 to 7 working days for the replacement to be dispatched and delivered to your address.");
+const SCENARIOS = {
+  support: {
+    label: "Customer support",
+    eyebrow: "AI for Customer Support · Weeks 2 to 3 · Core skills",
+    stepTitle: "Real scenario: read the ticket", stepSub: "Read the ticket",
+    pills: [["", "#48213"], ["high", "Priority: high"], ["neutral", "Repeat contact"], ["neutral", "SLA 2h 40m left"]],
+    from: "Sam Patel", fromSub: "customer since 2022",
+    msg: "\"This is the SECOND time my order has arrived damaged. I have been a customer for 4 years. I want a full refund, not another replacement.\"",
+    bare: "Write a reply to this customer.",
+    snippet: "Ticket: \"This is the SECOND time my order has arrived damaged...\"",
+    ing: {
+      r: ["You are a senior support agent at Northfield Home.", "Role: You are a senior support agent at Northfield Home."],
+      c: ["Second damaged delivery. Customer for 4 years. Policy: full refund after repeat damage.", "Context: Second damaged delivery for a 4-year customer. Our policy allows a full refund after repeat damage, 3 to 5 working days."],
+      t: ["Calm and warm. Plain English. No corporate jargon.", "Tone: Calm, warm and human. Plain English. No corporate jargon."],
+      g: ["Confirm the refund, apologise once, keep the customer. Under 120 words.", "Goal: Confirm the outcome clearly, apologise once and keep the customer. Under 120 words."]
+    },
+    reply(s) {
+      const p = [];
+      p.push(s.t ? "Hi Sam," : "Dear Customer,");
+      if (s.c && s.t) p.push("I am really sorry. Your order arriving damaged a second time is not good enough, especially after four years with us.");
+      else if (s.c) p.push("We apologise that your order has arrived damaged for a second time. We value your custom of four years.");
+      else if (s.t) p.push("I am really sorry your order arrived damaged. That is frustrating, and I want to put it right.");
+      else p.push("Thank you for contacting us regarding order #48213. We apologise for any inconvenience caused by the damage to your item.");
+      const owner = s.r ? "I have" : "We have";
+      if (s.c) p.push(s.g ? owner + " processed a full refund to your original payment card. You will see it within 3 to 5 working days." : owner + " arranged a full refund for your order, which will be returned to you in due course once it has been processed by the relevant team.");
+      else p.push(s.g ? owner + " arranged a free replacement, which will be with you within 5 to 7 working days." : "We would be happy to send you a replacement item at no extra cost. Please allow 5 to 7 working days for the replacement to be dispatched and delivered to your address.");
+      if (!s.g) p.push(s.t ? "I know this has been a hassle, and I hope this helps. If there is anything else at all that you need, please just let me know and I will be happy to help with anything." : "We take the quality of our deliveries very seriously and continuously work to improve our service. If you have any further questions or concerns, please do not hesitate to contact us at any time.");
+      else p.push(s.t ? "We would love the chance to get your next order right." : "We hope to continue serving you in future.");
+      p.push(s.r ? (s.t ? "Priya\nSenior Support, Northfield Home" : "Kind regards,\nPriya, Senior Support Agent") : "Kind regards,\nCustomer Service Team");
+      return p;
+    },
+    checks: [
+      { id: "c", label: "Accurate to policy", pass: "Offers the refund the customer asked for and policy allows.", fail: "Offers a replacement the customer said they do not want." },
+      { id: "t", label: "Human tone", pass: "Warm and direct. Sounds like a person.", fail: "Stiff and corporate. \"Any inconvenience caused\" will not calm an angry customer." },
+      { id: "r", label: "Takes ownership", pass: "A named agent who says \"I have\".", fail: "Signed by a faceless team. Nobody owns the problem." },
+      { id: "g", label: "Clear and concise", pass: "One clear outcome with a timeframe, no filler.", fail: "Vague timing and padding the customer has to read through." }
+    ],
+    draft: [
+      ["Hi Sam, I am really sorry. A second damaged delivery is not good enough after four years with us.", false],
+      ["I have processed a full refund to your original payment card, which you will see within 3 to 5 working days.", false],
+      ["As a thank you for your patience, I have also added a £25 voucher to your account.", true],
+      ["We would love the chance to get your next order right. Priya, Senior Support", false]
+    ],
+    policy: [["Policy: repeat damage", "Full refund to the original payment method. Arrives in 3 to 5 working days."], ["Policy: goodwill credit", "Vouchers and credits need team leader approval before they are offered."]],
+    good: "The £25 voucher is not in policy and needs team leader approval. AI tools often add generous-sounding extras the customer will hold you to, so this check is always the agent's job.",
+    caughtLabel: "Off-policy promise caught"
+  },
+
+  leader: {
+    label: "Team leader",
+    eyebrow: "AI for Team Leaders · Weeks 2 to 3 · Core skills",
+    stepTitle: "Real scenario: read the situation", stepSub: "Read the situation",
+    pills: [["", "1:1 prep"], ["neutral", "Team: Client Delivery"], ["high", "Needs a conversation this week"]],
+    from: "Jordan Lee", fromSub: "team member, usually reliable",
+    msg: "Your notes: Jordan has missed 3 project deadlines in the last 6 weeks. At the last 1:1 they mentioned the new client has doubled their workload.",
+    bare: "Write feedback to Jordan about missed deadlines.",
+    snippet: "Notes: \"Jordan has missed 3 project deadlines in the last 6 weeks...\"",
+    ing: {
+      r: ["You are Jordan's team leader in Client Delivery.", "Role: You are Jordan's team leader in Client Delivery."],
+      c: ["3 missed deadlines in 6 weeks. Usually reliable. Heavy load from a new client. First conversations are supportive.", "Context: Jordan has missed 3 deadlines in 6 weeks, is usually reliable and has extra work from a new client. Our approach: a first conversation is supportive and private."],
+      t: ["Supportive, direct and specific. Not a warning letter.", "Tone: Supportive, direct and specific. Not a warning letter."],
+      g: ["Agree a 30-minute 1:1 this week. Under 120 words.", "Goal: Agree a 30-minute 1:1 this week to talk about workload. Under 120 words."]
+    },
+    reply(s) {
+      const p = [];
+      p.push(s.t ? "Hi Jordan," : "Dear Jordan,");
+      if (s.c && s.t) p.push("I wanted to check in. You have missed three deadlines in the last six weeks, which is not like you, and I know the new client has added a lot to your plate.");
+      else if (s.c) p.push("This message concerns your performance. You have missed three deadlines in the last six weeks since the new client started.");
+      else if (s.t) p.push("I wanted to check in about some recent deadlines. I know things have been busy and I want to help.");
+      else p.push("It has come to my attention that you have missed several deadlines recently. This is not acceptable and needs to improve.");
+      const own = s.r ? "I would like to" : "Management would like to";
+      if (s.c) p.push(s.g ? own + " meet for 30 minutes this week to talk through your workload and agree priorities together. Does Thursday at 2pm work?" : own + " discuss this with you at some point so that we can look at what might be going on with the workload from the new client.");
+      else p.push(s.g ? own + " meet this week to discuss your performance and agree next steps." : "Please ensure that all future deadlines are met. Let me know if you have any questions about this.");
+      if (!s.g) p.push(s.t ? "I just want you to know that I am here for you and happy to chat about anything at all, whenever suits you, there is no rush." : "Your performance will continue to be monitored closely going forward.");
+      else p.push(s.t ? "We will sort this out together." : "Thank you for your attention to this.");
+      p.push(s.r ? (s.t ? "Alex\nTeam Leader, Client Delivery" : "Regards,\nAlex, Team Leader") : "Regards,\nManagement");
+      return p;
+    },
+    checks: [
+      { id: "c", label: "Accurate to the facts", pass: "Uses the real facts: 3 deadlines in 6 weeks and the new client.", fail: "Vague \"several deadlines\" with no mention of the workload." },
+      { id: "t", label: "Human tone", pass: "Supportive and direct. Opens a conversation.", fail: "Reads like a warning letter. Jordan will get defensive." },
+      { id: "r", label: "Takes ownership", pass: "Written by their own manager, who owns the conversation.", fail: "\"It has come to my attention\" and signed by \"Management\"." },
+      { id: "g", label: "Clear next step", pass: "One clear action: a 30-minute 1:1 on Thursday.", fail: "No clear next step, or an open-ended \"whenever suits you\"." }
+    ],
+    draft: [
+      ["Hi Jordan, I wanted to check in about the last few deadlines.", false],
+      ["I know the new client has added a lot, and I want to help you prioritise.", false],
+      ["If another deadline is missed, this will go on your formal record.", true],
+      ["Could we meet for 30 minutes on Thursday? Alex", false]
+    ],
+    policy: [["Approach: first conversations", "Supportive and private, focused on understanding and help."], ["Approach: formal warnings", "Only after a documented process agreed with HR."]],
+    good: "A first conversation is supportive, and formal warnings need an HR process. AI often adds a firm-sounding line that changes the whole tone, so the manager decides what is said.",
+    caughtLabel: "Off-policy threat caught"
+  },
+
+  hr: {
+    label: "HR adviser",
+    eyebrow: "AI for HR Teams · Weeks 2 to 3 · Core skills",
+    stepTitle: "Real scenario: read the query", stepSub: "Read the query",
+    pills: [["", "HR query #2291"], ["neutral", "Annual leave"], ["neutral", "Reply within 2 days"]],
+    from: "Ben Carter", fromSub: "employee, Finance team",
+    msg: "\"I still have 7 days of holiday left this year. Can I carry them all over to next year?\"",
+    bare: "Reply to this employee's holiday question.",
+    snippet: "Query: \"I still have 7 days of holiday left this year...\"",
+    ing: {
+      r: ["You are an HR adviser at Northfield Home.", "Role: You are an HR adviser at Northfield Home."],
+      c: ["7 days left. Policy: carry over up to 5 days with manager approval, used by 31 March.", "Context: Ben has 7 days left. Policy: up to 5 days can be carried over with manager approval and must be used by 31 March."],
+      t: ["Friendly, clear and plain English.", "Tone: Friendly, clear and plain English."],
+      g: ["Give a clear answer and the next step. Under 100 words.", "Goal: Give a clear yes or no and the next step. Under 100 words."]
+    },
+    reply(s) {
+      const p = [];
+      p.push(s.t ? "Hi Ben," : "Dear Employee,");
+      if (s.c && s.t) p.push("Thanks for checking before the year ends. You have 7 days left, so here is how carry-over works for you.");
+      else if (s.c) p.push("You have 7 days of annual leave remaining this year.");
+      else if (s.t) p.push("Thanks for getting in touch, happy to help with this.");
+      else p.push("Thank you for your query regarding annual leave carry-over.");
+      const own = s.r ? "I have checked" : "HR has checked";
+      if (s.c) p.push(s.g ? own + " the policy: you can carry over up to 5 days, with your manager's approval, to use by 31 March. The other 2 days need to be taken before 31 December." : own + " the policy and some of your days may be eligible for carry-over, subject to certain conditions and approvals as set out in the relevant guidance.");
+      else p.push(s.g ? "You may be able to carry over some leave. Please speak to your manager to confirm." : "Holiday carry-over rules can vary depending on your contract and circumstances. Please refer to the employee handbook for full details.");
+      if (!s.g) p.push(s.t ? "Hope that helps a bit! If you have any other questions about holiday or anything else at all, just shout and we can chat whenever." : "If you have any further questions, please do not hesitate to contact the HR team.");
+      else p.push(s.t ? "Next step: ask your manager to approve the carry-over, and book the other 2 days soon." : "Please arrange approval with your manager.");
+      p.push(s.r ? (s.t ? "Maya\nHR Adviser, Northfield Home" : "Kind regards,\nMaya, HR Adviser") : "Kind regards,\nHR Team");
+      return p;
+    },
+    checks: [
+      { id: "c", label: "Accurate to policy", pass: "Gives the real rule: 5 days, with approval, by 31 March.", fail: "Vague \"may be eligible\". Ben still does not know the answer." },
+      { id: "t", label: "Human tone", pass: "Friendly and clear.", fail: "Formal and distant: \"Dear Employee\"." },
+      { id: "r", label: "Takes ownership", pass: "A named adviser who has checked the policy.", fail: "Signed by a faceless team." },
+      { id: "g", label: "Clear next step", pass: "Ben knows exactly what to do next.", fail: "No clear action, so Ben will have to ask again." }
+    ],
+    draft: [
+      ["Hi Ben, thanks for checking before the year ends.", false],
+      ["You can carry over up to 5 days with your manager's approval, to use by 31 March.", false],
+      ["The other 2 days can be paid out in your December salary instead.", true],
+      ["Next step: ask your manager to approve the carry-over. Maya, HR Adviser", false]
+    ],
+    policy: [["Policy: carry-over", "Up to 5 days, with manager approval, used by 31 March."], ["Policy: untaken leave", "Paid out only when someone leaves the company."]],
+    good: "Paying out untaken leave is only allowed when someone leaves. AI fills gaps with rules that sound plausible, so HR advice always needs a policy check.",
+    caughtLabel: "Made-up rule caught"
   }
-  // Filler without a goal
-  if (!s.g) {
-    p.push(s.t
-      ? "I know this has been a hassle, and I hope this helps. If there is anything else at all that you need, please just let me know and I will be happy to help with anything."
-      : "We take the quality of our deliveries very seriously and continuously work to improve our service. If you have any further questions or concerns, please do not hesitate to contact us at any time.");
-  } else {
-    p.push(s.t ? "We would love the chance to get your next order right." : "We hope to continue serving you in future.");
-  }
-  // Sign off
-  p.push(s.r ? (s.t ? "Priya\nSenior Support, Northfield Home" : "Kind regards,\nPriya, Senior Support Agent") : "Kind regards,\nCustomer Service Team");
-  return p;
+};
+
+const KEYS = { r: ["R", "Role"], c: ["C", "Context"], t: ["T", "Tone"], g: ["G", "Goal"] };
+const ORDER = ["r", "c", "t", "g"];
+let current = "support";
+let state = { r: false, c: false, t: false, g: false };
+let lastReply = [];
+let caught = false;
+let track;
+
+function newTrack() { return { start: Date.now(), order: [], t44: null, attempts: 0, tDone: null }; }
+function fmt(ms) { if (ms == null) return "not yet"; const s = Math.round(ms / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function S() { return SCENARIOS[current]; }
+
+function renderSeg() {
+  const seg = document.getElementById("seg");
+  seg.innerHTML = Object.keys(SCENARIOS).map(k => `<button type="button" id="sc-${k}" data-k="${k}" aria-pressed="${k === current}">${esc(SCENARIOS[k].label)}</button>`).join("");
+  seg.querySelectorAll("button").forEach(b => b.addEventListener("click", () => setScenario(b.dataset.k)));
 }
 
-const CHECKS = [
-  { id: "c", label: "Accurate to policy", pass: "Offers the refund the customer asked for and policy allows.", fail: "Offers a replacement the customer said they do not want." },
-  { id: "t", label: "Human tone", pass: "Warm and direct. Sounds like a person.", fail: "Stiff and corporate. \"Any inconvenience caused\" will not calm an angry customer." },
-  { id: "r", label: "Takes ownership", pass: "A named agent who says \"I have\".", fail: "Signed by a faceless team. Nobody owns the problem." },
-  { id: "g", label: "Clear and concise", pass: "One clear outcome with a timeframe, no filler.", fail: "Vague timing and padding the customer has to read through." }
-];
+function setScenario(k) {
+  current = k;
+  state = { r: false, c: false, t: false, g: false };
+  lastReply = [];
+  caught = false;
+  track = newTrack();
+  const sc = S();
+  document.getElementById("eyebrow").textContent = sc.eyebrow;
+  document.getElementById("t-ticket").textContent = sc.stepTitle;
+  document.getElementById("pg-1-sub").textContent = sc.stepSub;
+  document.getElementById("case-head").innerHTML = sc.pills.map(p => p[0] ? `<span class="pill ${p[0]}">${esc(p[1])}</span>` : `<span>${esc(p[1])}</span>`).join("");
+  document.getElementById("case-from").innerHTML = `${esc(sc.from)} <span class="foot">· ${esc(sc.fromSub)}</span>`;
+  document.getElementById("case-msg").textContent = sc.msg;
+  document.getElementById("policy").innerHTML = sc.policy.map(p => `<dt>${esc(p[0])}</dt><dd>${esc(p[1])}</dd>`).join("");
+  document.getElementById("feedback").hidden = true;
+  document.getElementById("btn-retry").hidden = true;
+  renderSeg();
+  render();
+  renderDraft();
+}
 
-function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function toggle(id) {
+  state[id] = !state[id];
+  if (state[id] && !track.order.includes(id)) track.order.push(id);
+  render();
+}
 
 function render() {
-  // Ingredients
+  const sc = S();
   const ingEl = document.getElementById("ingredients");
-  ingEl.innerHTML = ING.map(i =>
-    `<button type="button" class="ing" id="ing-${i.id}" data-id="${i.id}" aria-pressed="${state[i.id]}">
-      <span class="key" aria-hidden="true">${i.key}</span>
-      <span><span class="name">${i.name}</span><br><span class="text">${esc(i.text)}</span></span>
+  ingEl.innerHTML = ORDER.map(id =>
+    `<button type="button" class="ing" id="ing-${id}" data-id="${id}" aria-pressed="${state[id]}">
+      <span class="key" aria-hidden="true">${KEYS[id][0]}</span>
+      <span><span class="name">${KEYS[id][1]}</span><br><span class="text">${esc(sc.ing[id][0])}</span></span>
     </button>`).join("");
-  ingEl.querySelectorAll(".ing").forEach(b => b.addEventListener("click", () => { state[b.dataset.id] = !state[b.dataset.id]; render(); }));
+  ingEl.querySelectorAll(".ing").forEach(b => b.addEventListener("click", () => toggle(b.dataset.id)));
 
-  // Prompt
-  const lines = ["Write a reply to this customer.", "", "Ticket: \"This is the SECOND time my order has arrived damaged...\""];
-  const added = ING.filter(i => state[i.id]).map(i => i.line);
-  document.getElementById("prompt").innerHTML = esc(lines.join("\n")) + (added.length ? "\n\n<span class=\"added\">" + esc(added.join("\n")) + "</span>" : "");
+  const added = ORDER.filter(id => state[id]).map(id => sc.ing[id][1]);
+  document.getElementById("prompt").innerHTML = esc(sc.bare + "\n\n" + sc.snippet) + (added.length ? "\n\n<span class=\"added\">" + esc(added.join("\n")) + "</span>" : "");
 
-  // Reply
-  const reply = buildReply(state);
+  const reply = sc.reply(state);
   document.getElementById("reply").innerHTML = reply.map((para, idx) =>
     `<p class="${lastReply[idx] !== undefined && lastReply[idx] !== para ? "changed" : ""}">${esc(para).replace(/\n/g, "<br>")}</p>`).join("");
   lastReply = reply;
   const words = reply.join(" ").split(/\s+/).filter(Boolean).length;
   document.getElementById("wc").textContent = words + " words";
-  const n = Object.values(state).filter(Boolean).length;
+  const n = ORDER.filter(id => state[id]).length;
   document.getElementById("ingcount").textContent = n === 0 ? "bare prompt" : n + " of 4 ingredients";
 
-  // Checks
-  document.getElementById("checks").innerHTML = CHECKS.map(c => {
+  document.getElementById("checks").innerHTML = sc.checks.map(c => {
     const ok = state[c.id];
     return `<li class="${ok ? "pass" : "fail"}"><span class="mark" aria-hidden="true">${ok ? "✓" : "✕"}</span>
-      <span><strong>${c.label}</strong> <span class="why">${esc(ok ? c.pass : c.fail)}</span></span></li>`;
+      <span><strong>${esc(c.label)}</strong> <span class="why">${esc(ok ? c.pass : c.fail)}</span></span></li>`;
   }).join("");
   document.getElementById("score").textContent = n + "/4";
+  document.getElementById("ready").hidden = n !== 4;
+  if (n === 4 && track.t44 == null) track.t44 = Date.now() - track.start;
+  updateProgress();
 }
 
-document.getElementById("btn-none").addEventListener("click", () => { ING.forEach(i => state[i.id] = false); render(); });
-document.getElementById("btn-all").addEventListener("click", () => { ING.forEach(i => state[i.id] = true); render(); });
+function updateProgress() {
+  const n = ORDER.filter(id => state[id]).length;
+  document.getElementById("pg-2-sub").textContent = n + " of 4 ingredients";
+  document.getElementById("pg-2").className = n === 4 ? "done" : "active";
+  document.getElementById("pg-3").className = caught ? "done" : (n === 4 ? "active" : "");
+  document.getElementById("pg-3-sub").textContent = caught ? S().caughtLabel : "Check before you send";
+  renderFac();
+}
 
-// Step 3
-const DRAFT = [
-  { t: "Hi Sam, I am really sorry. A second damaged delivery is not good enough after four years with us.", bad: false },
-  { t: "I have processed a full refund to your original payment card, which you will see within 3 to 5 working days.", bad: false },
-  { t: "As a thank you for your patience, I have also added a £25 voucher to your account.", bad: true },
-  { t: "We would love the chance to get your next order right. Priya, Senior Support", bad: false }
-];
 function renderDraft() {
+  const sc = S();
   const d = document.getElementById("draft");
-  d.innerHTML = DRAFT.map((s, i) => `<button type="button" class="sent" id="sent-${i}" data-i="${i}">${esc(s.t)}</button>`).join("");
+  d.innerHTML = sc.draft.map((s, i) => `<button type="button" class="sent" id="sent-${i}" data-i="${i}">${esc(s[0])}</button>`).join("");
   d.querySelectorAll(".sent").forEach(b => b.addEventListener("click", () => {
-    const s = DRAFT[+b.dataset.i];
+    if (caught) return;
+    const s = sc.draft[+b.dataset.i];
     const fb = document.getElementById("feedback");
     d.querySelectorAll(".sent").forEach(x => x.classList.remove("flag-wrong"));
     fb.hidden = false;
-    if (s.bad) {
+    track.attempts += 1;
+    if (s[1]) {
       b.classList.add("flag-right", "removed");
       fb.className = "feedback good";
-      fb.textContent = "Good catch. The £25 voucher is not in policy and needs team leader approval. AI tools often add generous-sounding extras the customer will hold you to, so this check is always the agent's job.";
+      fb.innerHTML = "<b>Good catch. Activity complete.</b> " + esc(sc.good) + " AI drafts, people decide.";
+      caught = true;
+      track.tDone = Date.now() - track.start;
+      document.getElementById("btn-retry").hidden = false;
+      updateProgress();
     } else {
       b.classList.add("flag-wrong");
       fb.className = "feedback bad";
-      fb.textContent = "This sentence matches policy. Look for a promise the policy panel does not cover.";
+      fb.textContent = "This sentence matches policy. Look for a line the policy panel does not cover.";
+      renderFac();
     }
   }));
 }
 
-// Copy template
+const COHORT = [["Tone", 46, false], ["Role", 25, false], ["Context", 17, true], ["Goal", 12, false]];
+function renderFac() {
+  const live = document.getElementById("fac-live");
+  if (!live || !track) return;
+  const first = track.order.length ? KEYS[track.order[0]][1] : "none yet";
+  const order = track.order.length ? track.order.map(id => KEYS[id][1]).join(" → ") : "none yet";
+  live.innerHTML = [
+    ["Scenario", S().label],
+    ["First ingredient switched on", first],
+    ["Order of ingredients", order],
+    ["Time to 4/4", fmt(track.t44)],
+    ["Step 3 attempts", track.attempts ? String(track.attempts) : "none yet"],
+    ["Time to complete", fmt(track.tDone)]
+  ].map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("");
+  document.getElementById("fac-bars").innerHTML = COHORT.map(c =>
+    `<div class="bar-row${c[2] ? " key" : ""}"><span>${c[0]}</span><span class="bar-track"><span class="bar-fill" style="display:block;width:${c[1]}%"></span></span><span>${c[1]}%</span></div>`).join("");
+}
+
+document.getElementById("btn-fac").addEventListener("click", e => {
+  const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
+  e.currentTarget.setAttribute("aria-pressed", String(on));
+  document.getElementById("fac").hidden = !on;
+  renderFac();
+});
+document.getElementById("btn-none").addEventListener("click", () => { ORDER.forEach(id => state[id] = false); render(); });
+document.getElementById("btn-all").addEventListener("click", () => { ORDER.forEach(id => { if (!state[id]) { state[id] = true; if (!track.order.includes(id)) track.order.push(id); } }); render(); });
+document.getElementById("btn-next").addEventListener("click", () => {
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.getElementById("t-verify").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+});
+document.getElementById("btn-retry").addEventListener("click", () => {
+  caught = false;
+  track.attempts = 0; track.tDone = null;
+  document.getElementById("feedback").hidden = true;
+  document.getElementById("btn-retry").hidden = true;
+  renderDraft();
+  updateProgress();
+});
 document.getElementById("btn-copy").addEventListener("click", () => {
-  const tpl = "Role: You are a [role] at [company].\nContext: [what happened, customer history, the policy that applies]\nTone: [how it should sound]\nGoal: [the outcome you want, plus a length limit]\n\nTicket: [paste the ticket, with personal details removed]";
+  const tpl = "Role: You are a [role] at [company].\nContext: [what happened, the history, the policy that applies]\nTone: [how it should sound]\nGoal: [the outcome you want, plus a length limit]\n\nTask: [paste the ticket or situation, with personal details removed]";
   const status = document.getElementById("copy-status");
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(tpl).then(() => { status.textContent = "Template copied."; }, () => { status.textContent = tpl; });
   } else { status.textContent = tpl; }
 });
 
-render();
-renderDraft();
+setScenario("support");
 </script>
