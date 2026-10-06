@@ -28,7 +28,7 @@ A trainer view shows what the current learner did: which ingredient they chose f
 
 - **Scripted, not live AI:** every learner sees the same result, and no AI account or licence is needed.
 - **Built from real work:** each scenario reflects a task people actually do, not a generic AI example.
-- **Safe by design:** practice data only. The activity stores nothing and sends nothing anywhere.
+- **Safe by design:** practice data only. The activity does not store or send any learner data.
 - **Simple to share:** one self-contained HTML file that works on desktop and mobile.
 
 ## Built with
