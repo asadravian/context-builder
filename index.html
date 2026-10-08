@@ -11,33 +11,33 @@
 <style>
 /* Layout: a support-desk workbench. Left: the ticket and the four prompt ingredients. Right: the AI draft and its quality check. Step 3 spans full width. */
 :root {
-  --bg: #f3f5f4;
+  --bg: #f6f6f6;
   --surface: #ffffff;
-  --ink: #17231f;
-  --muted: #5b6b66;
-  --line: #d7dfdc;
-  --accent: #0f6b5c;
-  --accent-soft: #e0f0ec;
-  --warn: #b4501c;
-  --warn-soft: #fbeadf;
-  --good: #1d7a3e;
-  --good-soft: #e3f3e8;
-  --chip-off: #eef2f0;
+  --ink: #002a4b;
+  --muted: #4d6378;
+  --line: #dde4ea;
+  --accent: #006ca8;
+  --accent-soft: #e1f3fc;
+  --warn: #b53f0e;
+  --warn-soft: #fcebe3;
+  --good: #437c0b;
+  --good-soft: #ebf4e1;
+  --chip-off: #eef2f5;
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111816; --surface: #19221f; --ink: #e6eeeb; --muted: #9aaba5; --line: #2c3a36;
-    --accent: #5cc4ae; --accent-soft: #1d3530; --warn: #f0935f; --warn-soft: #3a2519;
-    --good: #6fd08f; --good-soft: #1b3324; --chip-off: #222c29; color-scheme: dark;
+    --bg: #06192a; --surface: #0c2438; --ink: #e8eef4; --muted: #9fb3c5; --line: #1f3a52;
+    --accent: #3db8ee; --accent-soft: #0c3552; --warn: #f28a5c; --warn-soft: #3a2316;
+    --good: #8fcb52; --good-soft: #1b3314; --chip-off: #12304a; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111816; --surface: #19221f; --ink: #e6eeeb; --muted: #9aaba5; --line: #2c3a36;
-  --accent: #5cc4ae; --accent-soft: #1d3530; --warn: #f0935f; --warn-soft: #3a2519;
-  --good: #6fd08f; --good-soft: #1b3324; --chip-off: #222c29; color-scheme: dark;
+  --bg: #06192a; --surface: #0c2438; --ink: #e8eef4; --muted: #9fb3c5; --line: #1f3a52;
+    --accent: #3db8ee; --accent-soft: #0c3552; --warn: #f28a5c; --warn-soft: #3a2316;
+    --good: #8fcb52; --good-soft: #1b3314; --chip-off: #12304a; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
