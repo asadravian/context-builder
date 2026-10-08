@@ -174,7 +174,7 @@ header { display: grid; gap: 10px; }
     <ol class="progress" aria-label="Activity progress">
       <li id="pg-1" class="done"><span class="pg-dot" aria-hidden="true">1</span><span><b>Real scenario</b><span class="pg-sub" id="pg-1-sub">Read the ticket</span></span></li>
       <li id="pg-2"><span class="pg-dot" aria-hidden="true">2</span><span><b>Prompting with context</b><span class="pg-sub" id="pg-2-sub">0 of 4 ingredients</span></span></li>
-      <li id="pg-3"><span class="pg-dot" aria-hidden="true">3</span><span><b>Human in the loop</b><span class="pg-sub" id="pg-3-sub">Check before you send</span></span></li>
+      <li id="pg-3"><span class="pg-dot" aria-hidden="true">3</span><span><b>Human in the loop</b><span class="pg-sub" id="pg-3-sub">Always check before you send</span></span></li>
     </ol>
   </header>
 
@@ -250,7 +250,7 @@ header { display: grid; gap: 10px; }
   </div>
 
   <section class="panel" aria-labelledby="t-verify">
-    <div class="step-label"><span class="step-no">Step 3</span><h2 id="t-verify">Human in the loop: check before you send</h2></div>
+    <div class="step-label"><span class="step-no">Step 3</span><h2 id="t-verify">Human in the loop: always check before you send</h2></div>
     <p class="lede">Good context gets you a good draft, not a finished one. AI rarely gives the same answer twice: this is a second draft from the same four-ingredient prompt, and this time it slipped in one line our policy does not allow. Click the sentence you would remove.</p>
     <div class="verify">
       <div class="draft" id="draft"></div>
@@ -502,7 +502,7 @@ function updateProgress() {
   document.getElementById("pg-2-sub").textContent = n + " of 4 ingredients";
   document.getElementById("pg-2").className = n === 4 ? "done" : "active";
   document.getElementById("pg-3").className = caught ? "done" : (n === 4 ? "active" : "");
-  document.getElementById("pg-3-sub").textContent = caught ? S().caughtLabel : "Check before you send";
+  document.getElementById("pg-3-sub").textContent = caught ? S().caughtLabel : "Always check before you send";
   renderFac();
 }
 
